@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Editing Pro — Professional Video & Photo Editor with AI</title>
+  <meta name="description" content="Editing Pro is the professional video and photo editing platform powered by Xeno AI. Edit like a pro with 100+ filters, AI tools, 4K export, and more. Free plan available.">
+  <meta name="keywords" content="video editing, photo editing, AI editor, Xeno AI, 4K export, filters, color grading, free video editor">
+  <meta property="og:title" content="Editing Pro — AI-Powered Video & Photo Editor">
+  <meta property="og:description" content="Edit videos and photos like a professional with Xeno AI assistance, 100+ filters, and powerful tools. Free to start.">
+
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/components.css">
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <style>
+    /* Page-specific overrides */
+    body { overflow-x: hidden; }
+    main { position: relative; z-index: 1; }
+
+    /* Mobile nav */
+    .mobile-nav {
+      display: none;
+      position: fixed;
+      top: 70px;
+      left: 0;
+      right: 0;
+      background: rgba(5,5,13,0.97);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 20px;
+      z-index: 999;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .mobile-nav.open { display: flex; }
+    .mobile-nav a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 1rem;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border-subtle);
+      transition: color 0.15s;
+    }
+    .mobile-nav a:hover { color: var(--text-primary); }
+
+    @media (max-width: 768px) {
+      #mobile-menu-toggle { display: flex !important; }
+    }
+
+    /* AI Section bg */
+    .ai-section { background: linear-gradient(180deg, transparent, rgba(124,58,237,0.03), transparent); }
+
+    /* Filter showcase colors */
+    .fs-cin { background: linear-gradient(135deg,#1a3a3a,#8b4500); }
+    .fs-vin { background: linear-gradient(135deg,#8b6914,#d4a017); }
+    .fs-por { background: linear-gradient(135deg,#ffb6c1,#ffc0cb); }
+    .fs-neon{ background: linear-gradient(135deg,#ff00ff,#ff69b4); }
+    .fs-bw  { background: linear-gradient(135deg,#000,#888); }
+    .fs-moo { background: linear-gradient(135deg,#0a0a0a,#2a2a3a); }
+    .fs-vib { background: linear-gradient(135deg,#ff0080,#7700ff); }
+    .fs-dre { background: linear-gradient(135deg,#e8d5f5,#d5e8f5); }
+    .fs-urb { background: linear-gradient(135deg,#2c2c2c,#555555); }
+    .fs-land{ background: linear-gradient(135deg,#228b22,#006400); }
+    .fs-food{ background: linear-gradient(135deg,#ff6b35,#f7c59f); }
+    .fs-fash{ background: linear-gradient(135deg,#000000,#333333); }
+
+    /* Animated gradient text */
+    .animated-gradient {
+      background: linear-gradient(135deg, #7c3aed, #00d4ff, #fbbf24, #7c3aed);
+      background-size: 300% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: gradientShift 4s linear infinite;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Stars Background -->
+<div class="stars-bg" aria-hidden="true"></div>
+
+<!-- Particle Orbs -->
+<div class="orb orb-purple" style="width:600px;height:600px;top:-200px;left:-200px;" aria-hidden="true"></div>
+<div class="orb orb-cyan"   style="width:400px;height:400px;top:400px;right:-100px;" aria-hidden="true"></div>
+<div class="orb orb-gold"   style="width:300px;height:300px;top:800px;left:50%;transform:translateX(-50%);" aria-hidden="true"></div>
+
+<!-- ── NAVBAR ─────────────────────────────────────────────── -->
+<nav class="navbar" role="navigation" aria-label="Main navigation">
+  <a class="nav-logo" href="index.html" aria-label="Editing Pro home">
+    <div class="nav-logo-icon" aria-hidden="true">✂️</div>
+    <span class="nav-logo-text">Editing Pro</span>
+  </a>
+
+  <ul class="nav-links" role="list">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#ai-section">Xeno AI</a></li>
+    <li><a href="#filters">Filters</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#tokens">Tokens</a></li>
+    <li><a href="editor.html">Editor</a></li>
+  </ul>
+
+  <div class="nav-actions">
+    <!-- User menu (hidden by default) -->
+    <div class="nav-user-menu" style="display:none; align-items:center; gap:10px;">
+      <div class="token-display" onclick="openTokenShop()" title="Buy more tokens">
+        <span class="token-icon">🪙</span>
+        <span class="token-count">90</span>
+        <span class="token-label">tokens</span>
+      </div>
+      <span style="font-size:0.85rem;color:var(--text-secondary);" class="user-name">User</span>
+      <div style="width:34px;height:34px;border-radius:50%;background:var(--grad-primary);display:flex;align-items:center;justify-content:center;font-size:0.85rem;font-weight:700;cursor:pointer;" onclick="toast.info('Profile settings coming soon!')">👤</div>
+    </div>
+
+    <!-- Login buttons -->
+    <button class="btn btn-secondary btn-sm nav-login-btn" onclick="openAuth('login')">Sign In</button>
+    <button class="btn btn-primary btn-sm nav-login-btn" onclick="openAuth('register')">Get Started Free</button>
+
+    <!-- Mobile toggle -->
+    <button id="mobile-menu-toggle" class="topbar-btn" style="display:none;" aria-label="Toggle menu" aria-expanded="false">☰</button>
+  </div>
+</nav>
+
+<!-- Mobile Nav -->
+<div class="mobile-nav" id="mobile-nav" role="navigation" aria-label="Mobile navigation">
+  <a href="#features" onclick="document.getElementById('mobile-nav').classList.remove('open')">Features</a>
+  <a href="#ai-section" onclick="document.getElementById('mobile-nav').classList.remove('open')">Xeno AI</a>
+  <a href="#filters" onclick="document.getElementById('mobile-nav').classList.remove('open')">Filters</a>
+  <a href="#pricing" onclick="document.getElementById('mobile-nav').classList.remove('open')">Pricing</a>
+  <a href="#tokens" onclick="document.getElementById('mobile-nav').classList.remove('open')">Tokens</a>
+  <a href="editor.html" style="border-bottom:none;">Open Editor →</a>
+</div>
+
+<main>
+
+<!-- ── HERO ──────────────────────────────────────────────── -->
+<section class="hero" id="home" aria-labelledby="hero-title">
+
+  <div class="hero-bg-glow" aria-hidden="true"></div>
+
+  <!-- Badge -->
+  <div class="hero-badge" role="status">
+    <span class="hero-badge-dot" aria-hidden="true"></span>
+    Powered by Xeno AI — Version 3.0
+  </div>
+
+  <!-- Title -->
+  <h1 class="hero-title" id="hero-title">
+    Edit Like a Pro.<br>
+    <span class="hero-title-line2">Think Like a Creator.</span>
+  </h1>
+
+  <p class="hero-desc">
+    The most powerful AI-assisted video and photo editing platform on the web.
+    Meet <strong>Xeno</strong> — your personal AI editing assistant that helps with every step.
+  </p>
+
+  <!-- CTAs -->
+  <div class="hero-ctas">
+    <a href="editor.html" class="btn btn-primary btn-lg">
+      🎬 Start Editing Free
+    </a>
+    <button class="btn btn-secondary btn-lg" onclick="scrollTo('features')">
+      ✨ Explore Features
+    </button>
+  </div>
+
+  <!-- Stats -->
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="hero-stat-number" data-counter="12000000" data-suffix="+">12M+</div>
+      <div class="hero-stat-label">Active Creators</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-number" data-counter="100" data-suffix="+">100+</div>
+      <div class="hero-stat-label">Filters & Effects</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-number" data-counter="50" data-suffix="+">50+</div>
+      <div class="hero-stat-label">AI Tools</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-number" data-counter="4" data-suffix="K">4K</div>
+      <div class="hero-stat-label">Max Resolution</div>
+    </div>
+  </div>
+
+  <!-- Preview Mockup -->
+  <div class="hero-preview animate-float" style="animation-duration:6s;">
+    <div class="preview-window" role="img" aria-label="Editing Pro interface preview">
+      <div class="preview-titlebar">
+        <div class="preview-dot"></div>
+        <div class="preview-dot"></div>
+        <div class="preview-dot"></div>
+        <span style="margin-left:auto;font-size:0.75rem;color:var(--text-muted);">Editing Pro — Untitled Project</span>
+      </div>
+      <div class="preview-body">
+        <!-- Left Sidebar -->
+        <div class="preview-sidebar">
+          <div style="font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;">Video Tools</div>
+          ${['✂️ Trim','⚡ Speed','🎨 Color','📷 Stabilize','🔇 Denoise','✨ Effects','🎬 Transitions','📝 Text','🎵 Audio'].map((t,i) => `
+            <div class="preview-tool ${i===2?'active':''}">${t.split(' ')[0]} <span style="font-size:0.65rem;">${t.split(' ')[1]||''}</span></div>
+          `).join('')}
+        </div>
+        <!-- Canvas -->
+        <div class="preview-canvas">
+          <img src="assets/editor-preview.png" alt="Editor workspace preview" style="width:100%;height:100%;object-fit:cover;opacity:0.85;">
+        </div>
+        <!-- Right Panel -->
+        <div class="preview-right">
+          <div style="font-size:0.6rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px;">Properties</div>
+          ${['Brightness','Contrast','Saturation','Temperature','Sharpness'].map((p,i) => `
+            <div class="preview-prop">
+              <div class="preview-prop-label">${p}</div>
+              <div class="preview-prop-bar">
+                <div class="preview-prop-fill" style="width:${[65,45,80,55,70][i]}%;"></div>
+              </div>
+            </div>
+          `).join('')}
+          <div style="margin-top:12px;padding:8px;background:rgba(124,58,237,0.1);border:1px solid rgba(124,58,237,0.2);border-radius:8px;font-size:0.65rem;color:var(--purple-light);">
+            🤖 Xeno: Color grade looks great! Try boosting saturation slightly.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scroll hint -->
+  <div class="hero-scroll-hint" aria-hidden="true">
+    <span>Scroll to explore</span>
+    <span class="scroll-arrow">↓</span>
+  </div>
+</section>
+
+<!-- ── FEATURES ───────────────────────────────────────────── -->
+<section class="section" id="features" aria-labelledby="features-title">
+  <div class="section-header">
+    <div class="section-tag" aria-hidden="true">⚡ FEATURES</div>
+    <h2 class="section-title" id="features-title">
+      Everything You Need to<br><span class="text-gradient">Create Masterpieces</span>
+    </h2>
+    <p class="section-desc">Professional-grade tools made accessible to every creator. No experience required — Xeno AI guides you.</p>
+  </div>
+
+  <div class="features-grid">
+
+    <!-- Video Editing -->
+    <article class="glass-card feature-card">
+      <div class="feature-icon-wrap" style="background:linear-gradient(135deg,rgba(124,58,237,0.3),rgba(0,212,255,0.2));">🎬</div>
+      <h3 class="feature-title">Professional Video Editing</h3>
+      <p class="feature-desc">Multi-track timeline, precision trimming, speed control (0.1x–16x), transitions, keyframe animation, and much more.</p>
+      <div class="feature-tags">
+        <span class="feature-tag">Multi-track</span>
+        <span class="feature-tag">Keyframes</span>
+        <span class="feature-tag">Transitions</span>
+        <span class="feature-tag">Speed Ramp</span>
+      </div>
+    </article>
+
+    <!-- Photo Editing -->
+    <article class="glass-card feature-card">
+      <div class="feature-icon-wrap" style="background:linear-gradient(135deg,rgba(244,63,94,0.3),rgba(251,191,36,0.2));">📸</div>
+      <h3 class="feature-title">Advanced Photo Editing</h3>
+      <p class="feature-desc">Full retouching suite with healing brush, clone stamp, AI skin smoothing, HDR enhancement, and AI upscaling.</p>
+      <div class="feature-tags">
+        <span class="feature-tag">AI Upscale</span>
+        <span class="feature-tag">Retouching</span>
+        <span class="feature-tag">HDR</span>
+        <span class="feature-tag">BG Remove</span>
+      </div>
+    </article>
+
+    <!-- Xeno AI -->
+    <article class="glass-card feature-card">
+      <div class="feature-icon-wrap" style="background:linear-gradient(135deg,rgba(16,185,129,0.3),rgba(0,212,255,0.2));">🤖</div>
+      <h3 class="feature-title">Xeno AI Assistant</h3>
+      <p class="feature-desc">Your personal AI editing co-pilot. Ask Xeno anything — color grading, tool suggestions, export settings, and more.</p>
+      <div class="feature-tags">
+        <span class="feature-tag">Smart Suggestions</span>
+        <span class="feature-tag">Auto-Caption</span>
+        <span class="feature-tag">AI Color</span>
+        <span class="feature-tag">Object Remove</span>
+      </div>
+    </article>
+
+    <!-- Filters -->
+    <article class="glass-card feature-card">
+      <div class="feature-icon-wrap" style="background:linear-gradient(135deg,rgba(251,191,36,0.3),rgba(245,158,11,0.2));">✨</div>
+      <h3 class="feature-title">100+ Premium Filters</h3>
+      <p class="feature-desc">Cinematic LUTs, vintage film emulation, portrait enhancers, neon effects, and trending social media filters.</p>
+      <div class="feature-tags">
+        <span class="feature-tag">Cinematic</span>
+        <span class="feature-tag">Vintage</span>
+        <span class="feature-tag">Neon</span>
+        <span class="feature-tag">Portrait</span>
+      </div>
+    </article>
+
+    <!-- Free Tools -->
+    <article class="glass-card feature-card">
+      <div class="feature-icon-wrap" style="background:linear-gradient(135deg,rgba(16,185,129,0.3),rgba(52,211,153,0.2));">🆓</div>
+      <h3 class="feature-title">Powerful Free Tools</h3>
+      <p class="feature-desc">
+        <span class="badge badge-free" style="margin-right:4px;">FREE</span> Video Stabilization &amp;
+        <span class="badge badge-free" style="margin:0 4px;">FREE</span> Noise Reduction are completely free for all users!
+      </p>
+      <div class="feature-tags">
+        <span class="feature-tag">Stabilization</span>
+        <span class="feature-tag">Noise Reduce</span>
+        <span class="feature-tag">1080p Export</span>
+        <span class="feature-tag">90 Tokens</span>
+      </div>
+    </article>
+
+    <!-- Export -->
+    <article class="glass-card feature-card">
+      <div class="feature-icon-wrap" style="background:linear-gradient(135deg,rgba(124,58,237,0.3),rgba(244,63,94,0.2));">📤</div>
+      <h3 class="feature-title">Flexible Export Options</h3>
+      <p class="feature-desc">Export in 4K 120fps (Premium), 1080p 60/120fps (Free), 720p and 360p. Multiple formats: MP4, MOV, WebM, HEIC.</p>
+      <div class="feature-tags">
+        <span class="feature-tag badge badge-paid">4K 120fps $22</span>
+        <span class="feature-tag">1080p Free</span>
+        <span class="feature-tag">720p Free</span>
+        <span class="feature-tag">360p Free</span>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+<!-- ── AI SHOWCASE ─────────────────────────────────────────── -->
+<section class="section ai-section" id="ai-section" aria-labelledby="ai-title">
+  <div class="ai-showcase">
+
+    <!-- Left: Features List -->
+    <div>
+      <div class="section-tag" aria-hidden="true">🤖 XENO AI</div>
+      <h2 class="section-title" id="ai-title" style="text-align:left;margin-bottom:24px;">
+        Meet <span class="text-gradient">Xeno</span> —<br>Your AI Creative Co-Pilot
+      </h2>
+      <p class="section-desc" style="text-align:left;margin:0 0 32px;">
+        Xeno understands your creative vision and guides you through every editing decision with intelligent suggestions, one-click tools, and step-by-step assistance.
+      </p>
+
+      <div class="ai-features-list">
+        <div class="ai-feature-item">
+          <div class="ai-feature-icon">🎨</div>
+          <div class="ai-feature-content">
+            <div class="ai-feature-title">AI Color Grading</div>
+            <div class="ai-feature-desc">Get cinematic looks with a single prompt. Xeno analyzes your footage and suggests the perfect color grade.</div>
+          </div>
+        </div>
+        <div class="ai-feature-item">
+          <div class="ai-feature-icon">📝</div>
+          <div class="ai-feature-content">
+            <div class="ai-feature-title">Auto-Subtitles & Captions</div>
+            <div class="ai-feature-desc">AI transcribes your audio in 30+ languages and generates perfectly timed, stylized captions.</div>
+          </div>
+        </div>
+        <div class="ai-feature-item">
+          <div class="ai-feature-icon">🪄</div>
+          <div class="ai-feature-content">
+            <div class="ai-feature-title">Object & Background Removal</div>
+            <div class="ai-feature-desc">Remove anything from your video or photo — people, objects, backgrounds — in seconds with AI precision.</div>
+          </div>
+        </div>
+        <div class="ai-feature-item">
+          <div class="ai-feature-icon">⚡</div>
+          <div class="ai-feature-content">
+            <div class="ai-feature-title">Smart Cut & Beat Sync</div>
+            <div class="ai-feature-desc">Xeno automatically detects beats in your music and syncs your cuts for a professional rhythm-edited video.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Chat Demo -->
+    <div>
+      <div class="xeno-demo-chat" role="complementary" aria-label="Xeno AI chat demonstration">
+        <div class="xeno-demo-header">
+          <div style="width:38px;height:38px;border-radius:50%;background:var(--grad-primary);display:flex;align-items:center;justify-content:center;font-size:1.1rem;box-shadow:0 0 15px rgba(124,58,237,0.4);">🤖</div>
+          <div>
+            <div style="font-family:var(--font-display);font-weight:700;font-size:0.95rem;">Xeno AI</div>
+            <div style="font-size:0.7rem;color:var(--green);display:flex;align-items:center;gap:4px;">
+              <div style="width:6px;height:6px;border-radius:50%;background:var(--green);"></div>
+              Online — Always Ready
+            </div>
+          </div>
+          <div class="badge badge-new" style="margin-left:auto;">AI</div>
+        </div>
+        <div class="xeno-demo-messages">
+          <div class="xeno-msg bot">
+            <div class="msg-avatar">🤖</div>
+            <div class="msg-bubble">Hi! I'm <strong>Xeno</strong>. I see you're editing a travel vlog. Want me to suggest a cinematic color grade? 🎨</div>
+          </div>
+          <div class="xeno-msg user">
+            <div class="msg-avatar">👤</div>
+            <div class="msg-bubble">Yes! Make it look like a Netflix documentary</div>
+          </div>
+          <div class="xeno-msg bot">
+            <div class="msg-avatar">🤖</div>
+            <div class="msg-bubble">Perfect! I'll apply:<br>
+              • <strong>Teal & Orange LUT</strong> for that cinematic look<br>
+              • Shadows: cool blue (-15)<br>
+              • Highlights: warm (+12)<br>
+              • Film grain: 25%<br>
+              Apply now? ✨</div>
+          </div>
+          <div class="xeno-msg user">
+            <div class="msg-avatar">👤</div>
+            <div class="msg-bubble">Apply it!</div>
+          </div>
+          <div class="xeno-msg bot">
+            <div class="msg-avatar">🤖</div>
+            <div class="msg-bubble">✅ <strong>Netflix Documentary</strong> look applied! Your video looks stunning. Want me to also suggest background music? 🎵</div>
+          </div>
+        </div>
+        <div style="padding:12px 16px;border-top:1px solid var(--border-subtle);">
+          <div style="display:flex;gap:8px;">
+            <input style="flex:1;background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:999px;color:var(--text-primary);font-size:0.85rem;padding:8px 16px;outline:none;font-family:var(--font-body);" placeholder="Ask Xeno anything..." onfocus="this.style.borderColor='var(--purple)'" onblur="this.style.borderColor='var(--border-subtle)'">
+            <button onclick="openAuth('register');toast.info('Sign up free to chat with Xeno!')" style="width:36px;height:36px;border-radius:50%;background:var(--grad-primary);border:none;color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.9rem;flex-shrink:0;">➤</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick stats -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;">
+        <div class="glass-card" style="padding:16px;text-align:center;">
+          <div style="font-size:1.8rem;font-weight:900;font-family:var(--font-display);" class="text-gradient">30+</div>
+          <div style="font-size:0.75rem;color:var(--text-muted);">Languages Supported</div>
+        </div>
+        <div class="glass-card" style="padding:16px;text-align:center;">
+          <div style="font-size:1.8rem;font-weight:900;font-family:var(--font-display);" class="text-gradient">50+</div>
+          <div style="font-size:0.75rem;color:var(--text-muted);">AI-Powered Tools</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── FILTER SHOWCASE ────────────────────────────────────── -->
+<section class="section" id="filters" aria-labelledby="filters-title">
+  <div class="section-header">
+    <div class="section-tag" aria-hidden="true">✨ FILTERS</div>
+    <h2 class="section-title" id="filters-title">
+      100+ Professional<br><span class="text-gradient">Filters & Effects</span>
+    </h2>
+    <p class="section-desc">From Hollywood cinematic LUTs to trending social media filters — every style is covered.</p>
+  </div>
+
+  <div class="filter-showcase" role="list" aria-label="Filter category previews">
+    <div class="filter-showcase-item fs-cin" role="listitem" style="color:white;" onclick="window.location.href='editor.html'">🎬<span class="filter-showcase-item-name">Cinematic</span></div>
+    <div class="filter-showcase-item fs-vin" role="listitem" style="color:white;" onclick="window.location.href='editor.html'">📷<span class="filter-showcase-item-name">Vintage</span></div>
+    <div class="filter-showcase-item fs-por" role="listitem" style="color:#333;" onclick="window.location.href='editor.html'">🤳<span class="filter-showcase-item-name">Portrait</span></div>
+    <div class="filter-showcase-item fs-neon" role="listitem" style="color:white;" onclick="window.location.href='editor.html'">💜<span class="filter-showcase-item-name">Neon</span></div>
+    <div class="filter-showcase-item fs-bw" role="listitem" style="color:white;" onclick="window.location.href='editor.html'">⬛<span class="filter-showcase-item-name">B&amp;W</span></div>
+    <div class="filter-showcase-item fs-moo" role="listitem" style="color:white;" onclick="window.location.href='editor.html'">🌑<span class="filter-showcase-item-name">Moody</span></div>
+    <div class="filter-showcase-item fs-vib" role="listitem" style="color:white;" onclick="window.location.href='editor.html'">🌈<span class="filter-showcase-item-name">Vibrant</span></div>
+    <div class="filter-showcase-item fs-dre" role="listitem" style="color:#444;" onclick="window.location.href='editor.html'">💭<span class="filter-showcase-item-name">Dreamy</span></div>
+    <div class="filter-showcase-item fs-urb" role="listitem" style="color:white;" onclick="window.location.href='editor.html'">🏙️<span class="filter-showcase-item-name">Urban</span></div>
+    <div class="filter-showcase-item fs-land" role="listitem" style="color:white;" onclick="window.location.href='editor.html'">🏔️<span class="filter-showcase-item-name">Landscape</span></div>
+    <div class="filter-showcase-item fs-food" role="listitem" style="color:white;" onclick="window.location.href='editor.html'">🍕<span class="filter-showcase-item-name">Food</span></div>
+    <div class="filter-showcase-item fs-fash" role="listitem" style="color:white;" onclick="window.location.href='editor.html'">👗<span class="filter-showcase-item-name">Fashion</span></div>
+  </div>
+
+  <div style="text-align:center;margin-top:32px;">
+    <a href="editor.html" class="btn btn-secondary">Browse All Filters in Editor →</a>
+  </div>
+</section>
+
+<!-- ── PRICING ────────────────────────────────────────────── -->
+<section class="section" id="pricing" aria-labelledby="pricing-title">
+  <div class="section-header">
+    <div class="section-tag" aria-hidden="true">💰 PRICING</div>
+    <h2 class="section-title" id="pricing-title">
+      Simple, Transparent<br><span class="text-gradient">Pricing for Every Creator</span>
+    </h2>
+    <p class="section-desc">Start free. Upgrade when you're ready. No hidden fees.</p>
+  </div>
+
+  <div class="pricing-grid">
+
+    <!-- Normal / Free -->
+    <div class="pricing-card" role="article" aria-label="Normal plan — Free">
+      <div class="pricing-tier">Normal</div>
+      <div class="pricing-name">Free Forever</div>
+      <div class="pricing-price-wrap">
+        <span class="pricing-currency">$</span>
+        <span class="pricing-amount">0</span>
+        <span class="pricing-period">/month</span>
+      </div>
+      <ul class="pricing-features" role="list">
+        <li class="pricing-feature included" role="listitem"><span class="pricing-feature-icon">✅</span>Video editing up to 1080p 120fps</li>
+        <li class="pricing-feature included" role="listitem"><span class="pricing-feature-icon">✅</span>Photo editing full suite</li>
+        <li class="pricing-feature included" role="listitem"><span class="pricing-feature-icon">✅</span>Video Stabilization (FREE)</li>
+        <li class="pricing-feature included" role="listitem"><span class="pricing-feature-icon">✅</span>Noise Reduction (FREE)</li>
+        <li class="pricing-feature included" role="listitem"><span class="pricing-feature-icon">✅</span>90 tokens on signup</li>
+        <li class="pricing-feature included" role="listitem"><span class="pricing-feature-icon">✅</span>50+ free filters</li>
+        <li class="pricing-feature included" role="listitem"><span class="pricing-feature-icon">✅</span>Xeno AI basic assistance</li>
+        <li class="pricing-feature excluded" role="listitem"><span class="pricing-feature-icon">✕</span>4K 120fps export</li>
+        <li class="pricing-feature excluded" role="listitem"><span class="pricing-feature-icon">✕</span>Ultra/Super-Ultra resolution</li>
+        <li class="pricing-feature excluded" role="listitem"><span class="pricing-feature-icon">✕</span>Advanced AI tools</li>
+      </ul>
+      <button class="btn btn-secondary w-full" onclick="openAuth('register')" style="justify-content:center;">Get Started Free →</button>
+    </div>
+
+    <!-- Pro -->
+    <div class="pricing-card popular" role="article" aria-label="Pro plan — $15 per month">
+      <div class="pricing-popular-badge">⭐ Most Popular</div>
+      <div class="pricing-tier" style="color:var(--purple-light);">Pro</div>
+      <div class="pricing-name" style="background:var(--grad-primary);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Pro Creator</div>
+      <div class="pricing-price-wrap">
+        <span class="pricing-currency">$</span>
+        <span class="pricing-amount">15</span>
+        <span class="pricing-period">/month</span>
+      </div>
+      <div class="pricing-trial-note">🎁 14-Day Free Trial</div>
+      <ul class="pricing-features" role="list">
+        <li class="pricing-feature included" role="listitem"><span class="pricing-feature-icon">✅</span>Everything in Free</li>
+        <li class="pricing-feature included" role="listitem"><span class="pricing-feature-icon">✅</span>Priority AI processing</li>
+        <li class="pricing-feature included" role="listitem"><span class="pricing-feature-icon">✅</span>Advanced AI tools</li>
+        <li class="pricing-feature included" role="listitem"><span class="pricing-feature-icon">✅</span>50 extra tokens/month</li>
+        <li class="pricing-feature included" role="listitem"><span class="pricing-feature-icon">✅</span>100+ premium filters</li>
+        <li class="pricing-feature included" role="listitem"><span class="pricing-feature-icon">✅</span>Auto-subtitles in 30+ languages</li>
+        <li class="pricing-feature included" role="listitem"><span class="pricing-feature-icon">✅</span>No watermark export</li>
+        <li class="pricing-feature included" role="listitem"><span class="pricing-feature-icon">✅</span>HD photo export</li>
+        <li class="pricing-feature included" role="listitem"><span class="pricing-feature-icon">✅</span>Team collaboration</li>
+        <li class="pricing-feature excluded" role="listitem"><span class="pricing-feature-icon">✕</span>4K 120fps (add $22)</li>
+        <li class="pricing-feature excluded" role="listitem"><span class="pricing-feature-icon">✕</span>Super-Ultra resolution</li>
+      </ul>
+      <button class="btn btn-primary w-full" onclick="upgradePlan('pro')" style="justify-content:center;">Start Free Trial →</button>
+    </div>
+
+    <!-- Legend -->
+    <div class="pricing-card legend" role="article" aria-label="Legend plan — $40 per month">
+      <div class="pricing-tier" style="color:var(--gold);">Legend 👑</div>
+      <div class="pricing-name" style="background:var(--grad-gold);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Legend Elite</div>
+      <div class="pricing-price-wrap">
+        <span class="pricing-currency">$</span>
+        <span class="pricing-amount animated-gradient">40</span>
+        <span class="pricing-period">/month</span>
+      </div>
+      <div class="pricing-trial-note" style="background:rgba(251,191,36,0.1);border-color:rgba(251,191,36,0.2);color:var(--gold);">🎁 14-Day Free Trial</div>
+      <ul class="pricing-features" role="list">
+        <li class="pricing-feature included" role="listitem"><span class="pricing-feature-icon">✅</span>Everything in Pro</li>
+        <li class="pricing-feature included" role="listitem"><span class="pricing-feature-icon">✅</span><strong>4K 120fps export</strong> included</li>
+        <li class="pricing-feature included" role="listitem"><span class="pricing-feature-icon">✅</span>Overlay resolution</li>
+        <li class="pricing-feature included" role="listitem"><span class="pricing-feature-icon">✅</span>Ultra resolution</li>
+        <li class="pricing-feature included" role="listitem"><span class="pricing-feature-icon">✅</span>Super Ultra resolution</li>
+        <li class="pricing-feature included" role="listitem"><span class="pricing-feature-icon">✅</span>200 tokens/month</li>
+        <li class="pricing-feature included" role="listitem"><span class="pricing-feature-icon">✅</span>Priority Xeno AI</li>
+        <li class="pricing-feature included" role="listitem"><span class="pricing-feature-icon">✅</span>Unlimited projects</li>
+        <li class="pricing-feature included" role="listitem"><span class="pricing-feature-icon">✅</span>Commercial license</li>
+        <li class="pricing-feature included" role="listitem"><span class="pricing-feature-icon">✅</span>Dedicated support</li>
+        <li class="pricing-feature included" role="listitem"><span class="pricing-feature-icon">✅</span>Early access features</li>
+      </ul>
+      <button class="btn btn-gold w-full" onclick="upgradePlan('legend')" style="justify-content:center;">Start Free Trial →</button>
+    </div>
+
+  </div>
+
+  <!-- Export note -->
+  <div style="text-align:center;margin-top:32px;padding:20px;background:rgba(251,191,36,0.05);border:1px solid rgba(251,191,36,0.15);border-radius:var(--radius-xl);max-width:600px;margin-left:auto;margin-right:auto;">
+    <span style="font-size:1.2rem;">👑</span>
+    <strong style="color:var(--gold);">4K 120fps Premium Export</strong> — Available as a standalone purchase for <strong style="color:var(--gold);">$22</strong> per project, or included free with Legend Plan.
+    <br><span style="font-size:0.8rem;color:var(--text-muted);margin-top:6px;display:block;">Overlay, Ultra &amp; Super-Ultra resolutions require Pro or Legend plan.</span>
+  </div>
+</section>
+
+<!-- ── TOKEN SHOP ──────────────────────────────────────────── -->
+<section class="section" id="tokens" aria-labelledby="tokens-title">
+  <div class="section-header">
+    <div class="section-tag" aria-hidden="true">🪙 TOKENS</div>
+    <h2 class="section-title" id="tokens-title">
+      AI Upscaling Tokens
+    </h2>
+    <p class="section-desc">
+      Photo AI upscaling uses tokens. You get <strong style="color:var(--gold);">90 free tokens</strong> on signup.
+      Each upscale costs just <strong style="color:var(--gold);">5 tokens</strong>.
+    </p>
+  </div>
+
+  <!-- Free tokens note -->
+  <div style="text-align:center;margin-bottom:40px;">
+    <div class="badge badge-trial" style="font-size:0.9rem;padding:10px 24px;">🎁 Get 90 FREE Tokens on Sign Up</div>
+  </div>
+
+  <div class="token-shop-grid">
+
+    <div class="token-pack glass-card" onclick="EP.user.loggedIn ? purchaseTokens(50,14) : openAuth('register')" role="button" aria-label="Buy 50 tokens for $14">
+      <div class="token-pack-icon">🪙</div>
+      <div class="token-pack-amount">50</div>
+      <div class="token-pack-unit">Tokens = 10 upscales</div>
+      <div class="token-pack-price">$14</div>
+      <div class="token-pack-per">$0.28 per token</div>
+    </div>
+
+    <div class="token-pack glass-card best-value" onclick="EP.user.loggedIn ? purchaseTokens(150,35) : openAuth('register')" role="button" aria-label="Buy 150 tokens for $35 — Most Popular">
+      <div class="token-pack-badge">🔥 Most Popular</div>
+      <div class="token-pack-icon">💰</div>
+      <div class="token-pack-amount">150</div>
+      <div class="token-pack-unit">Tokens = 30 upscales</div>
+      <div class="token-pack-price">$35</div>
+      <div class="token-pack-per">$0.23 per token</div>
+    </div>
+
+    <div class="token-pack glass-card" onclick="EP.user.loggedIn ? purchaseTokens(300,55) : openAuth('register')" role="button" aria-label="Buy 300 tokens for $55 — Best Value">
+      <div class="token-pack-badge" style="background:linear-gradient(135deg,#10b981,#059669);color:white;">🏆 Best Value</div>
+      <div class="token-pack-icon">💎</div>
+      <div class="token-pack-amount">300</div>
+      <div class="token-pack-unit">Tokens = 60 upscales</div>
+      <div class="token-pack-price">$55</div>
+      <div class="token-pack-per">$0.18 per token</div>
+    </div>
+
+  </div>
+
+  <div style="text-align:center;margin-top:24px;font-size:0.85rem;color:var(--text-muted);">
+    Tokens never expire · Secure payment · Instant delivery
+  </div>
+</section>
+
+<!-- ── PLATFORM SUPPORT ─────────────────────────────────── -->
+<section class="section" id="platforms" aria-labelledby="platforms-title">
+  <div class="section-header">
+    <div class="section-tag" aria-hidden="true">📱 PLATFORMS</div>
+    <h2 class="section-title" id="platforms-title">Works On Every Device</h2>
+    <p class="section-desc">Edit anywhere, anytime. Editing Pro is fully optimized for all your devices.</p>
+  </div>
+
+  <div class="platform-grid" role="list">
+    <div class="platform-item glass-card" role="listitem">
+      <div class="platform-icon">🖥️</div>
+      <div class="platform-name">Windows PC</div>
+    </div>
+    <div class="platform-item glass-card" role="listitem">
+      <div class="platform-icon">💻</div>
+      <div class="platform-name">Laptop</div>
+    </div>
+    <div class="platform-item glass-card" role="listitem">
+      <div class="platform-icon">🍎</div>
+      <div class="platform-name">MacBook</div>
+    </div>
+    <div class="platform-item glass-card" role="listitem">
+      <div class="platform-icon">📱</div>
+      <div class="platform-name">iPhone</div>
+    </div>
+    <div class="platform-item glass-card" role="listitem">
+      <div class="platform-icon">🤖</div>
+      <div class="platform-name">Android</div>
+    </div>
+  </div>
+
+  <p style="text-align:center;color:var(--text-muted);font-size:0.85rem;margin-top:24px;">Works in any modern browser — Chrome, Safari, Firefox, Edge</p>
+</section>
+
+<!-- ── TESTIMONIALS ────────────────────────────────────────── -->
+<section class="section" id="testimonials" aria-labelledby="testimonials-title">
+  <div class="section-header">
+    <div class="section-tag" aria-hidden="true">💬 TESTIMONIALS</div>
+    <h2 class="section-title" id="testimonials-title">
+      Loved by <span class="text-gradient">12 Million Creators</span>
+    </h2>
+  </div>
+
+  <div class="testimonials-grid">
+    <article class="glass-card testimonial-card">
+      <div class="testimonial-stars">★★★★★</div>
+      <p class="testimonial-text">"Xeno AI is an absolute game changer. I asked it to make my travel video look cinematic and it applied the perfect settings in seconds. Mind blown!"</p>
+      <div class="testimonial-author">
+        <div class="testimonial-avatar" style="background:linear-gradient(135deg,#7c3aed,#00d4ff);">AK</div>
+        <div>
+          <div class="testimonial-name">Alex Kim</div>
+          <div class="testimonial-role">Travel Content Creator</div>
+        </div>
+      </div>
+    </article>
+    <article class="glass-card testimonial-card">
+      <div class="testimonial-stars">★★★★★</div>
+      <p class="testimonial-text">"The photo upscaling with tokens is insane! My product photos go from blurry to crystal clear in 5 seconds. Worth every token."</p>
+      <div class="testimonial-author">
+        <div class="testimonial-avatar" style="background:linear-gradient(135deg,#f43f5e,#fbbf24);">SM</div>
+        <div>
+          <div class="testimonial-name">Sarah M.</div>
+          <div class="testimonial-role">E-commerce Photographer</div>
+        </div>
+      </div>
+    </article>
+    <article class="glass-card testimonial-card">
+      <div class="testimonial-stars">★★★★★</div>
+      <p class="testimonial-text">"Finally a browser-based editor that rivals desktop apps. The Legend plan with 4K 120fps export is worth every cent. My YouTube channel exploded!"</p>
+      <div class="testimonial-author">
+        <div class="testimonial-avatar" style="background:linear-gradient(135deg,#10b981,#00d4ff);">JR</div>
+        <div>
+          <div class="testimonial-name">Jordan Rivera</div>
+          <div class="testimonial-role">YouTuber — 2.4M subscribers</div>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ── CTA ────────────────────────────────────────────────── -->
+<section class="cta-section" aria-labelledby="cta-title">
+  <div class="cta-bg" aria-hidden="true"></div>
+  <div class="orb orb-purple" style="width:400px;height:400px;top:50%;left:50%;transform:translate(-50%,-50%);" aria-hidden="true"></div>
+  <div style="position:relative;z-index:1;">
+    <h2 class="cta-title" id="cta-title">
+      Ready to Create<br><span class="text-gradient">Something Amazing?</span>
+    </h2>
+    <p class="cta-desc">Join 12 million creators. Start free today — no credit card required. Get 90 tokens on signup!</p>
+    <div class="cta-btns">
+      <a href="editor.html" class="btn btn-primary btn-lg">🎬 Open Editor Free</a>
+      <button class="btn btn-secondary btn-lg" onclick="openAuth('register')">✨ Sign Up & Get 90 Tokens</button>
+    </div>
+    <p style="margin-top:20px;font-size:0.8rem;color:var(--text-muted);">✅ Free forever · 14-day Pro trial · Cancel anytime</p>
+  </div>
+</section>
+
+<!-- ── FOOTER ─────────────────────────────────────────────── -->
+<footer class="footer" role="contentinfo">
+  <div class="footer-grid">
+    <div>
+      <a class="nav-logo" href="index.html" style="margin-bottom:16px;display:inline-flex;" aria-label="Editing Pro home">
+        <div class="nav-logo-icon" aria-hidden="true">✂️</div>
+        <span class="nav-logo-text">Editing Pro</span>
+      </a>
+      <p class="footer-brand-desc">The professional AI-powered video and photo editing platform. Edit like a pro with Xeno AI at your side.</p>
+      <div class="footer-socials" style="margin-top:20px;">
+        <a href="#" class="social-link" aria-label="Twitter">𝕏</a>
+        <a href="#" class="social-link" aria-label="YouTube">▶</a>
+        <a href="#" class="social-link" aria-label="Instagram">📷</a>
+        <a href="#" class="social-link" aria-label="Discord">💬</a>
+      </div>
+    </div>
+    <div>
+      <div class="footer-col-title">Product</div>
+      <ul class="footer-links" role="list">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#ai-section">Xeno AI</a></li>
+        <li><a href="#filters">Filters</a></li>
+        <li><a href="editor.html">Editor</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Support</div>
+      <ul class="footer-links" role="list">
+        <li><a href="#">Help Center</a></li>
+        <li><a href="#">Tutorials</a></li>
+        <li><a href="#">API Docs</a></li>
+        <li><a href="#">Community</a></li>
+        <li><a href="#">Status</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Company</div>
+      <ul class="footer-links" role="list">
+        <li><a href="#">About</a></li>
+        <li><a href="#">Blog</a></li>
+        <li><a href="#">Careers</a></li>
+        <li><a href="#">Privacy</a></li>
+        <li><a href="#">Terms</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-copy">© 2026 Editing Pro. All rights reserved. Powered by Xeno AI.</div>
+    <div style="font-size:0.8rem;color:var(--text-muted);">
+      <span class="badge badge-free" style="margin-right:8px;">FREE</span>Stabilize &amp; Noise Reduce
+      <span class="badge badge-trial" style="margin-left:8px;">14 DAYS FREE</span>Pro &amp; Legend Trial
+    </div>
+  </div>
+</footer>
+
+</main>
+
+<!-- Scripts -->
+<script src="js/app.js"></script>
+<script src="js/xeno.js"></script>
+<script>
+  // Mobile menu toggle
+  document.getElementById('mobile-menu-toggle').addEventListener('click', function() {
+    const nav = document.getElementById('mobile-nav');
+    const expanded = nav.classList.toggle('open');
+    this.setAttribute('aria-expanded', expanded);
+  });
+
+  // Initialize Lucide icons
+  document.addEventListener('DOMContentLoaded', () => {
+    if (window.lucide) lucide.createIcons();
+  });
+</script>
+</body>
+</html>

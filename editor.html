@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Editor — Editing Pro</title>
+  <meta name="description" content="Professional video and photo editor with Xeno AI assistance. Edit, enhance, and export your media.">
+
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/editor.css">
+
+  <style>
+    body { overflow: hidden; }
+
+    /* Upload drag-over effect */
+    .canvas-area-dragover {
+      box-shadow: inset 0 0 0 3px var(--purple) !important;
+    }
+
+    /* Animated loading bar */
+    .processing-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 2px;
+      background: var(--grad-primary);
+      animation: shimmer 2s linear infinite;
+      background-size: 200% auto;
+    }
+
+    /* Tool active glow */
+    .tool-item.active {
+      box-shadow: 0 0 12px rgba(124,58,237,0.4);
+    }
+
+    /* Breadcrumb bar above editor */
+    .editor-breadcrumb {
+      position: fixed;
+      top: 60px;
+      left: 0;
+      right: 0;
+      height: 0;
+      z-index: 99;
+    }
+
+    /* Notification trial bar */
+    .trial-bar {
+      background: linear-gradient(135deg, rgba(0,212,255,0.1), rgba(124,58,237,0.1));
+      border-bottom: 1px solid rgba(0,212,255,0.2);
+      padding: 8px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: var(--cyan);
+      flex-shrink: 0;
+    }
+    .trial-bar-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 0;
+      line-height: 1;
+    }
+
+    /* Right tab panel content */
+    #right-panel-content {
+      padding: 12px;
+    }
+
+    /* Keyboardshortcuts hint */
+    .shortcuts-hint {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.8);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-full);
+      padding: 6px 16px;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      backdrop-filter: blur(10px);
+      white-space: nowrap;
+      z-index: 10;
+      pointer-events: none;
+      transition: opacity 0.3s;
+    }
+
+    /* Quick access toolbar */
+    .quick-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      padding: 6px 10px;
+      background: rgba(13,13,26,0.8);
+      border-bottom: 1px solid var(--border-subtle);
+      overflow-x: auto;
+      flex-shrink: 0;
+    }
+    .quick-tool {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 10px;
+      border-radius: var(--radius-sm);
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 0.75rem;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.15s;
+      font-family: var(--font-body);
+    }
+    .quick-tool:hover { background: var(--bg-card); color: var(--text-primary); }
+    .quick-tool .qt-icon { font-size: 0.95rem; }
+    .quick-tool-sep { width: 1px; height: 16px; background: var(--border-subtle); margin: 0 4px; flex-shrink: 0; }
+
+    /* Responsive: hide sidebars on mobile, show toggle */
+    @media (max-width: 900px) {
+      .editor-layout {
+        grid-template-columns: 1fr !important;
+        grid-template-rows: 60px auto 1fr 200px !important;
+      }
+    }
+
+    /* Custom scrollbar in sidebar */
+    .sidebar-content::-webkit-scrollbar { width: 4px; }
+    .sidebar-content::-webkit-scrollbar-track { background: transparent; }
+    .sidebar-content::-webkit-scrollbar-thumb { background: rgba(124,58,237,0.3); border-radius: 2px; }
+
+    /* Media status bar */
+    .media-status {
+      position: absolute;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.8);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-full);
+      padding: 5px 14px;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      backdrop-filter: blur(10px);
+      pointer-events: none;
+      white-space: nowrap;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Trial notification bar -->
+<div class="trial-bar" id="trial-bar" style="display:none;">
+  <div>
+    🎁 <strong>14-day Pro Trial active!</strong> You have access to all Pro features. Enjoy!
+  </div>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <button class="btn btn-primary btn-sm" onclick="upgradePlan('pro')">Upgrade to Pro $15/mo</button>
+    <button class="trial-bar-close" onclick="document.getElementById('trial-bar').remove()" aria-label="Close trial bar">✕</button>
+  </div>
+</div>
+
+<!-- ── EDITOR LAYOUT ─────────────────────────────────────── -->
+<div class="editor-layout" id="editor-layout">
+
+  <!-- ── TOP BAR ── -->
+  <header class="editor-topbar" role="banner">
+    <!-- Left -->
+    <div class="topbar-left">
+      <a href="index.html" class="nav-logo" style="text-decoration:none;" title="Back to Home" aria-label="Back to Editing Pro home">
+        <div class="nav-logo-icon" style="width:30px;height:30px;font-size:1rem;" aria-hidden="true">✂️</div>
+        <span class="nav-logo-text" style="font-size:1rem;">Editing Pro</span>
+      </a>
+
+      <div style="width:1px;height:20px;background:var(--border-subtle);"></div>
+
+      <input class="project-name-input"
+             id="project-name"
+             type="text"
+             value="Untitled Project"
+             aria-label="Project name">
+
+      <div style="display:flex;gap:4px;">
+        <button class="topbar-btn" id="undo-btn" onclick="Editor.undo()" title="Undo (Ctrl+Z)" aria-label="Undo">↩</button>
+        <button class="topbar-btn" id="redo-btn" onclick="Editor.redo()" title="Redo (Ctrl+Y)" aria-label="Redo">↪</button>
+        <button class="topbar-btn" onclick="Editor.saveProject()" title="Save (Ctrl+S)" aria-label="Save project">💾</button>
+      </div>
+    </div>
+
+    <!-- Center: Playback -->
+    <div class="topbar-center" role="group" aria-label="Playback controls">
+      <button class="topbar-btn" onclick="Timeline.skipToStart()" title="Skip to Start" aria-label="Skip to start">⏮</button>
+      <button class="topbar-btn" onclick="Timeline.stepBack()" title="Step Back (←)" aria-label="Step back">⏪</button>
+      <button class="play-btn" id="main-play-btn" onclick="Timeline.togglePlay()" title="Play/Pause (Space)" aria-label="Play/Pause">▶</button>
+      <button class="topbar-btn" onclick="Timeline.stepForward()" title="Step Forward (→)" aria-label="Step forward">⏩</button>
+      <button class="topbar-btn" onclick="Timeline.skipToEnd()" title="Skip to End" aria-label="Skip to end">⏭</button>
+      <span class="time-display" id="main-time" aria-live="polite">0:00 / 0:30</span>
+    </div>
+
+    <!-- Right -->
+    <div class="topbar-right">
+      <!-- Token display -->
+      <div class="token-display" onclick="openTokenShop()" title="Buy more tokens" role="button" aria-label="Token balance — click to buy more">
+        <span class="token-icon" aria-hidden="true">🪙</span>
+        <span class="token-count" id="topbar-tokens">90</span>
+        <span class="token-label">tokens</span>
+      </div>
+
+      <!-- User / Login -->
+      <div class="nav-user-menu" style="display:none;align-items:center;gap:8px;">
+        <span style="font-size:0.8rem;color:var(--text-secondary);" class="user-name">User</span>
+        <div style="width:30px;height:30px;border-radius:50%;background:var(--grad-primary);display:flex;align-items:center;justify-content:center;font-size:0.8rem;cursor:pointer;" onclick="toast.info('Profile settings coming soon!')">👤</div>
+      </div>
+      <button class="topbar-btn nav-login-btn" onclick="openAuth('login')" style="font-size:0.75rem;width:auto;padding:0 10px;" aria-label="Sign in">Sign In</button>
+
+      <!-- Export Button -->
+      <button class="export-btn" id="export-btn" onclick="ExportPanel.openExportModal()" aria-label="Export project">
+        📤 Export
+      </button>
+    </div>
+  </header>
+
+  <!-- ── LEFT SIDEBAR ── -->
+  <aside class="editor-sidebar-left" id="left-sidebar" role="complementary" aria-label="Editing tools">
+
+    <!-- Tabs -->
+    <div class="sidebar-tabs" role="tablist" aria-label="Tool categories">
+      <button class="sidebar-tab active" data-tab="video" role="tab" aria-selected="true" aria-controls="left-sidebar-content" onclick="Editor.switchLeftTab('video')">
+        <span class="tab-icon" aria-hidden="true">🎬</span>
+        <span>Video</span>
+      </button>
+      <button class="sidebar-tab" data-tab="photo" role="tab" aria-selected="false" onclick="Editor.switchLeftTab('photo')">
+        <span class="tab-icon" aria-hidden="true">📸</span>
+        <span>Photo</span>
+      </button>
+      <button class="sidebar-tab" data-tab="filters" role="tab" aria-selected="false" onclick="Editor.switchLeftTab('filters')">
+        <span class="tab-icon" aria-hidden="true">✨</span>
+        <span>Filters</span>
+      </button>
+      <button class="sidebar-tab" data-tab="audio" role="tab" aria-selected="false" onclick="Editor.switchLeftTab('audio')">
+        <span class="tab-icon" aria-hidden="true">🎵</span>
+        <span>Audio</span>
+      </button>
+      <button class="sidebar-tab" data-tab="ai" role="tab" aria-selected="false" onclick="Editor.switchLeftTab('ai')">
+        <span class="tab-icon" aria-hidden="true">🤖</span>
+        <span>AI</span>
+      </button>
+    </div>
+
+    <!-- Search -->
+    <div class="sidebar-search" id="sidebar-search-wrapper">
+      <div class="search-wrapper">
+        <span class="search-icon" aria-hidden="true">🔍</span>
+        <input class="search-input"
+               type="search"
+               placeholder="Search tools..."
+               aria-label="Search editing tools"
+               oninput="filterTools(this.value)">
+      </div>
+    </div>
+
+    <!-- Tool Content -->
+    <div class="sidebar-content" id="left-sidebar-content" role="tabpanel" aria-label="Video tools">
+      <!-- Populated by editor.js -->
+    </div>
+
+  </aside>
+
+  <!-- ── CANVAS ── -->
+  <main class="editor-canvas-area" id="canvas-area" role="main" aria-label="Canvas editing area">
+
+    <!-- Canvas Toolbar (top of canvas) -->
+    <div class="canvas-toolbar" role="toolbar" aria-label="Canvas tools">
+      <button class="canvas-tool-btn active" title="Select" aria-label="Select tool" onclick="setCanvasTool('select', this)">⬛</button>
+      <button class="canvas-tool-btn" title="Move" aria-label="Move tool" onclick="setCanvasTool('move', this)">✋</button>
+      <button class="canvas-tool-btn" title="Crop" aria-label="Crop tool" onclick="setCanvasTool('crop', this)">✂️</button>
+      <div class="canvas-divider" aria-hidden="true"></div>
+      <button class="canvas-tool-btn" title="Zoom In" aria-label="Zoom in" onclick="Editor.zoomIn()">🔍</button>
+      <button class="canvas-tool-btn" title="Zoom Out" aria-label="Zoom out" onclick="Editor.zoomOut()">🔎</button>
+      <div class="canvas-divider" aria-hidden="true"></div>
+      <button class="canvas-tool-btn" title="Fit to Screen" aria-label="Fit to screen" onclick="Editor.resetZoom()">⊡</button>
+      <div class="canvas-divider" aria-hidden="true"></div>
+      <!-- Aspect ratio selector -->
+      <select style="background:transparent;border:none;color:var(--text-secondary);font-size:0.75rem;cursor:pointer;outline:none;" aria-label="Aspect ratio">
+        <option>16:9</option>
+        <option>9:16</option>
+        <option>1:1</option>
+        <option>4:3</option>
+        <option>21:9</option>
+      </select>
+    </div>
+
+    <!-- Main Canvas -->
+    <div class="main-canvas" id="main-canvas" role="img" aria-label="Media preview canvas">
+      <div class="canvas-placeholder" id="canvas-placeholder"
+           role="button" tabindex="0"
+           aria-label="Click or drag files here to upload"
+           onkeydown="if(event.key==='Enter'||event.key===' ')this.click()">
+        <div class="canvas-upload-icon" aria-hidden="true">📁</div>
+        <div class="canvas-upload-text">Drop or Click to Upload</div>
+        <div class="canvas-upload-sub">Video, Photo — Any format supported</div>
+        <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
+          <span class="badge badge-free">🎬 MP4, MOV, AVI</span>
+          <span class="badge badge-free">📸 JPG, PNG, WebP</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Zoom controls (bottom right of canvas area) -->
+    <div class="canvas-zoom-controls" role="group" aria-label="Zoom controls">
+      <button class="zoom-btn" onclick="Editor.zoomOut()" title="Zoom Out" aria-label="Zoom out">−</button>
+      <div class="zoom-level" id="zoom-level-display" aria-live="polite">100%</div>
+      <button class="zoom-btn" onclick="Editor.zoomIn()" title="Zoom In" aria-label="Zoom in">+</button>
+    </div>
+
+    <!-- Media status bar (shows current file info) -->
+    <div class="media-status" id="media-status" aria-live="polite"></div>
+
+  </main>
+
+  <!-- ── RIGHT SIDEBAR ── -->
+  <aside class="editor-sidebar-right" id="right-sidebar" role="complementary" aria-label="Properties and export">
+
+    <!-- Panel Tabs -->
+    <div class="right-panel-tabs" role="tablist" aria-label="Right panel sections">
+      <button class="right-panel-tab active" data-tab="props" role="tab" aria-selected="true"
+              onclick="Editor.switchRightTab('props')">Properties</button>
+      <button class="right-panel-tab" data-tab="export" role="tab" aria-selected="false"
+              onclick="Editor.switchRightTab('export')">Export</button>
+    </div>
+
+    <!-- Panel Content -->
+    <div class="right-panel-content" id="right-panel-content" role="tabpanel">
+      <!-- Populated by editor.js -->
+    </div>
+
+  </aside>
+
+  <!-- ── TIMELINE ── -->
+  <section class="editor-timeline" id="timeline-container" role="region" aria-label="Video timeline">
+    <!-- Populated by timeline.js -->
+  </section>
+
+</div>
+
+<!-- Quick toolbar (below header, above sidebar) -->
+<div class="quick-toolbar" id="quick-toolbar" style="position:fixed;top:60px;left:0;right:0;z-index:98;" role="toolbar" aria-label="Quick access tools">
+  <button class="quick-tool" onclick="ToolsPanel.activate('stabilize', false)" aria-label="Stabilize video (Free)">
+    <span class="qt-icon" aria-hidden="true">📷</span> Stabilize <span class="badge badge-free" style="font-size:0.55rem;padding:1px 5px;margin-left:2px;">FREE</span>
+  </button>
+  <button class="quick-tool" onclick="ToolsPanel.activate('noise_r', false)" aria-label="Noise reduction (Free)">
+    <span class="qt-icon" aria-hidden="true">🔇</span> Denoise <span class="badge badge-free" style="font-size:0.55rem;padding:1px 5px;margin-left:2px;">FREE</span>
+  </button>
+  <div class="quick-tool-sep" aria-hidden="true"></div>
+  <button class="quick-tool" onclick="ToolsPanel.activate('color_basic', false)">
+    <span class="qt-icon" aria-hidden="true">🎨</span> Color Grade
+  </button>
+  <button class="quick-tool" onclick="ToolsPanel.activate('fx_chroma', false)">
+    <span class="qt-icon" aria-hidden="true">💚</span> Green Screen
+  </button>
+  <button class="quick-tool" onclick="Editor.switchLeftTab('filters')">
+    <span class="qt-icon" aria-hidden="true">✨</span> Filters
+  </button>
+  <div class="quick-tool-sep" aria-hidden="true"></div>
+  <button class="quick-tool" onclick="ToolsPanel.activate('ph_upscale', false, 5)" aria-label="AI Photo Upscale — 5 tokens">
+    <span class="qt-icon" aria-hidden="true">🔬</span> AI Upscale <span class="badge badge-paid" style="font-size:0.55rem;padding:1px 5px;margin-left:2px;">🪙5</span>
+  </button>
+  <button class="quick-tool" onclick="ToolsPanel.activate('ai_bg', false)">
+    <span class="qt-icon" aria-hidden="true">🧹</span> Remove BG
+  </button>
+  <button class="quick-tool" onclick="ToolsPanel.activate('text_add', false)">
+    <span class="qt-icon" aria-hidden="true">📝</span> Add Text
+  </button>
+  <div class="quick-tool-sep" aria-hidden="true"></div>
+  <button class="quick-tool" onclick="ToolsPanel.activate('trans_fade', false)">
+    <span class="qt-icon" aria-hidden="true">🌫️</span> Transitions
+  </button>
+  <button class="quick-tool" onclick="ToolsPanel.activate('aud_eq', false)">
+    <span class="qt-icon" aria-hidden="true">🎚️</span> Equalizer
+  </button>
+  <div class="quick-tool-sep" aria-hidden="true"></div>
+  <button class="quick-tool" onclick="XenoAI.toggle()" style="color:var(--purple-light);">
+    <span class="qt-icon" aria-hidden="true">🤖</span> Ask Xeno
+  </button>
+  <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+    <button class="quick-tool" onclick="ExportPanel.openExportModal()" style="color:var(--green);">
+      <span class="qt-icon" aria-hidden="true">📤</span> Export
+    </button>
+  </div>
+</div>
+
+<!-- Keyboard shortcuts hint (shows briefly) -->
+<div class="shortcuts-hint" id="shortcuts-hint" aria-hidden="true">
+  ⌨️ Space: Play/Pause · ← → : Step · Ctrl+Z: Undo · Ctrl+S: Save · Ctrl+E: Export
+</div>
+
+<!-- Scripts (order matters) -->
+<script src="js/app.js"></script>
+<script src="js/filters.js"></script>
+<script src="js/tools.js"></script>
+<script src="js/export.js"></script>
+<script src="js/timeline.js"></script>
+<script src="js/xeno.js"></script>
+<script src="js/editor.js"></script>
+
+<script>
+  // ── Canvas tool state ──────────────────────────────────────
+  function setCanvasTool(tool, btn) {
+    document.querySelectorAll('.canvas-tool-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const canvas = document.getElementById('canvas-area');
+    if (!canvas) return;
+    const cursors = { select: 'default', move: 'move', crop: 'crosshair' };
+    canvas.style.cursor = cursors[tool] || 'default';
+  }
+
+  // ── Search tools ───────────────────────────────────────────
+  function filterTools(query) {
+    const q = query.toLowerCase().trim();
+    document.querySelectorAll('.tool-item').forEach(item => {
+      const name = item.querySelector('.tool-name')?.textContent.toLowerCase() || '';
+      const title = item.getAttribute('title')?.toLowerCase() || '';
+      item.style.display = (!q || name.includes(q) || title.includes(q)) ? '' : 'none';
+    });
+    if (q) {
+      document.querySelectorAll('.tool-category').forEach(cat => {
+        const visible = [...cat.querySelectorAll('.tool-item')].some(i => i.style.display !== 'none');
+        cat.style.display = visible ? '' : 'none';
+      });
+    } else {
+      document.querySelectorAll('.tool-category').forEach(cat => cat.style.display = '');
+    }
+  }
+
+  // ── Adjust layout for quick toolbar ───────────────────────
+  document.addEventListener('DOMContentLoaded', () => {
+    const layout = document.getElementById('editor-layout');
+    if (layout) {
+      layout.style.marginTop = '32px';
+      layout.style.height = 'calc(100vh - 32px)';
+    }
+
+    // Show shortcuts hint briefly
+    const hint = document.getElementById('shortcuts-hint');
+    if (hint) {
+      setTimeout(() => { hint.style.opacity = '0'; }, 4000);
+      setTimeout(() => { hint.style.display = 'none'; }, 4500);
+    }
+
+    // Show trial bar if logged in
+    if (EP.user.loggedIn && EP.user.trialActive) {
+      document.getElementById('trial-bar').style.display = 'flex';
+    }
+
+    // Tokens on trial
+    EP.user.tokens = 90;
+    EP.user.trialActive = true;
+    document.querySelectorAll('.token-count').forEach(el => el.textContent = 90);
+  });
+
+  // ── Demo: show trial bar on auth ──────────────────────────
+  const _origCompleteAuth = window.completeAuth;
+  window.completeAuth = function(name, email, isNew) {
+    if (_origCompleteAuth) _origCompleteAuth(name, email, isNew);
+    const bar = document.getElementById('trial-bar');
+    if (bar) bar.style.display = 'flex';
+  };
+</script>
+
+</body>
+</html>
